@@ -109,7 +109,7 @@ void FAssetTypeActions_DataTableExtended::ExecuteExportAsXml(TArray< TWeakObject
 
 			if (OutFilenames.Num() > 0)
 			{
-				EDataTableExportFlags ExportFlags = EDataTableExportFlags::UsePrettyPropertyNames | EDataTableExportFlags::UsePrettyEnumNames | EDataTableExportFlags::UseJsonObjectsForStructs;
+				EDataTableExportFlags ExportFlags = EDataTableExportFlags::UsePrettyPropertyNames;
 				FDataTableExporterXml(ExportFlags).WriteTable(*DataTable, *OutFilenames[0]);
 			}
 		}

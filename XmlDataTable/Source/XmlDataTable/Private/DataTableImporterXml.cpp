@@ -84,22 +84,21 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 		InDataTable.RowMap.Add(RowName, RowData);
 
 		// Now iterate over cells (skipping first cell, that was row name)
-		for (const FXmlNode* PropertyNode = RowNode->GetFirstChildNode(); PropertyNode != nullptr; PropertyNode = PropertyNode->GetNextNode())
+		for (TFieldIterator<UProperty> It(InDataTable.RowStruct); It; ++It)
 		{
-			FName PropertyName = DataTableUtils::MakeValidName(PropertyNode->GetTag());
-			if (PropertyName == NAME_None)
+			UProperty* Property = *It;
+			check(Property);
+
+			const FString ColumnName = DataTableUtils::GetPropertyDisplayName(Property, Property->GetName());
+
+			const FXmlNode* ColumnNode = RowNode->FindChildNode(ColumnName);
+			if (ColumnNode == nullptr)
 			{
-				OutProblems.Add(FString::Printf(TEXT("PropertyName missing a name for row name %s."), *RowName.ToString()));
+				OutProblems.Add(FString::Printf(TEXT("Column %s is missing a in row %s."), *ColumnName, *RowName.ToString()));
 				continue;
 			}
-			// Try and assign string to data using the column property
-			UProperty* Property = InDataTable.FindTableProperty(PropertyName);
-			if (Property == nullptr)
-			{
-				OutProblems.Add(FString::Printf(TEXT("PropertyName missing a name for row name %s."), *RowName.ToString()));
-				continue;
-			}
-			const FString PropValue = PropertyNode->GetContent();
+
+			const FString PropValue = ColumnNode->GetContent();
 			FString Error = DataTableUtils::AssignStringToProperty(PropValue, Property, RowData);
 
 			// If we failed, output a problem string
@@ -111,6 +110,7 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 				OutProblems.Add(FString::Printf(TEXT("Problem assigning string '%s' to property '%s' on row '%s' : %s"), *PropValue, *PropertyName, *RowName.ToString(), *Error));
 			}
 		}
+
 		// Problem if we didn't have enough cells on this row
 		if (ColumnsNum < PropNums)
 		{
