@@ -5,8 +5,10 @@
 #include "UObject/EnumProperty.h"
 #include "DataTableUtils.h"
 #include "Engine/DataTable.h"
-
+#include "Common.h"
 #include "Engine/UserDefinedStruct.h"
+#include "pugixml.hpp"
+
 
 #if WITH_EDITOR
 
@@ -27,33 +29,29 @@ bool FDataTableExporterXml::WriteTable(const UDataTable& InDataTable, const FStr
 		return false;
 	}
 
-	XmlFile = TSharedPtr<FXmlFile>(new FXmlFile(TEXT("<?xml version=\"1.0\" encoding=\"UTF - 8\"?>\n<root>\n</root>"), EConstructMethod::ConstructFromBuffer));
-
-	FXmlNode* RootNode = XmlFile->GetRootNode();
-	if (RootNode == nullptr)
+	pugi::xml_document XmlTable;
+	pugi::xml_node RootNode = XmlTable.append_child(XmlTags::Root);
+	if (!RootNode)
 	{
 		return false;
 	}
 	// Iterate over rows
 	for (auto RowIt = InDataTable.RowMap.CreateConstIterator(); RowIt; ++RowIt)
 	{
-		{
-			// RowName
-			const FName RowName = RowIt.Key();
-			RootNode->AppendChildNode(RowName.ToString(), TEXT(""));
-			FXmlNode* RowNode = RootNode->FindChildNode(RowName.ToString());
+		pugi::xml_node RowNode = RootNode.append_child(XmlTags::RowName);
+		pugi::xml_node NameNode = RowNode.append_child(XmlTags::Name);
+		NameNode.append_child(pugi::node_pcdata).set_value(TCHAR_TO_UTF8(*RowIt.Key().ToString()));
 
-			// Now the values
-			uint8* RowData = RowIt.Value();
-			WriteRow(RowNode, InDataTable.RowStruct, RowData);
-		}
+		// Now the values
+		uint8* RowData = RowIt.Value();
+		WriteRow(RowNode, InDataTable.RowStruct, RowData);
 	}
 
-	XmlFile->Save(FileName);
+	XmlTable.save_file(TCHAR_TO_UTF8(*FileName), "    ", 1U, pugi::xml_encoding::encoding_utf8);
 	return true;
 }
 
-bool FDataTableExporterXml::WriteRow(FXmlNode* RowNode, const UScriptStruct* InRowStruct, const void* InRowData)
+bool FDataTableExporterXml::WriteRow(pugi::xml_node& RowNode, const UScriptStruct* InRowStruct, const void* InRowData)
 {
 	if (!InRowStruct)
 	{
@@ -72,11 +70,11 @@ bool FDataTableExporterXml::WriteRow(FXmlNode* RowNode, const UScriptStruct* InR
 	return true;
 }
 
-bool FDataTableExporterXml::WriteStructEntry(FXmlNode* RowNode, const void* InRowData, const UProperty* InProperty, const void* InPropertyData)
+bool FDataTableExporterXml::WriteStructEntry(pugi::xml_node& RowNode, const void* InRowData, const UProperty* InProperty, const void* InPropertyData)
 {
 	const FString Identifier = DataTableUtils::GetPropertyExportName(InProperty, DTExportFlags);
 	const FString PropertyValue = DataTableUtils::GetPropertyValueAsString(InProperty, (uint8*)InRowData, DTExportFlags);
-	RowNode->AppendChildNode(Identifier, PropertyValue);
+	RowNode.append_child(TCHAR_TO_UTF8(*Identifier)).append_child(pugi::node_pcdata).set_value(TCHAR_TO_UTF8(*PropertyValue));
 	return true;
 }
 #endif // WITH_EDITOR

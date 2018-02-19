@@ -48,7 +48,7 @@ public class XmlDataTable : ModuleRules
                 "Slate",
                 "SlateCore",
                 "UnrealEd",
-                "XmlParser",
+                "pugixml",
             }
 			);
 

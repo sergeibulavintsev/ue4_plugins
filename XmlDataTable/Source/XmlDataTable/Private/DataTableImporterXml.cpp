@@ -1,6 +1,9 @@
 #include "DataTableImporterXml.h"
 #include "Engine/DataTable.h"
 #include "Engine/UserDefinedStruct.h"
+#include "Common.h"
+#include "pugixml.hpp"
+#include <algorithm>
 
 namespace
 {
@@ -30,25 +33,32 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 		return false;
 	}
 
-	FXmlFile XmlFile(InFileName);
-	FXmlNode* RootNode = XmlFile.GetRootNode();
-	if (RootNode == nullptr && !XmlFile.GetLastError().IsEmpty())
+	pugi::xml_document XmlTable;
+	auto result = XmlTable.load_file(TCHAR_TO_UTF8(*InFileName));
+	if (result.status != pugi::xml_parse_status::status_ok)
 	{
-		OutProblems.Add(XmlFile.GetLastError());
+		OutProblems.Add(TEXT("Corrupted xml file."));
+		return false;
+	}
+	
+	pugi::xml_node Root = XmlTable.child(XmlTags::Root);
+	if (!Root)
+	{
+		OutProblems.Add(TEXT("XML file is empty."));
 		return false;
 	}
 
-	if (RootNode->GetChildrenNodes().Num() == 0)
+	auto RowNodes = Root.children();
+	int RowNum = std::distance(RowNodes.begin(), RowNodes.end());
+	if (RowNum == 0)
 	{
 		OutProblems.Add(TEXT("Too few rows."));
 		return false;
 	}
-	int ColumnsNum = GetDataTableColumnsNum(InDataTable);
-	for (const FXmlNode* RowNode = RootNode->GetFirstChildNode(); RowNode != nullptr; RowNode = RowNode->GetNextNode())
+	int ColumnsNum = InDataTable.GetColumnTitles().Num();
+	for (auto RowNode = RowNodes.begin(); RowNode != RowNodes.end(); RowNode++)
 	{
-		// Get row name
-		FName RowName = DataTableUtils::MakeValidName(RowNode->GetTag());
-
+		FName RowName = DataTableUtils::MakeValidName(FString(RowNode->child(XmlTags::Name).text().as_string()));
 		// Check its not 'none'
 		if (RowName == NAME_None)
 		{
@@ -63,7 +73,8 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 			continue;
 		}
 
-		int PropNums = RowNode->GetChildrenNodes().Num();
+		auto ColumnNodes = RowNode->children();
+		int PropNums = std::distance(RowNode->begin(), RowNode->end());
 		if (PropNums < ColumnsNum)
 		{
 			OutProblems.Add(FString::Printf(TEXT("Row '%s' has more cells than properties, is there a malformed string?"), *RowName.ToString()));
@@ -83,22 +94,20 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 		// Add to row map
 		InDataTable.RowMap.Add(RowName, RowData);
 
-		// Now iterate over cells (skipping first cell, that was row name)
 		for (TFieldIterator<UProperty> It(InDataTable.RowStruct); It; ++It)
 		{
 			UProperty* Property = *It;
 			check(Property);
 
 			const FString ColumnName = DataTableUtils::GetPropertyDisplayName(Property, Property->GetName());
-
-			const FXmlNode* ColumnNode = RowNode->FindChildNode(ColumnName);
-			if (ColumnNode == nullptr)
+			pugi::xml_node ColumnNode = RowNode->child(TCHAR_TO_UTF8(*ColumnName));
+			if (!ColumnNode)
 			{
 				OutProblems.Add(FString::Printf(TEXT("Column %s is missing a in row %s."), *ColumnName, *RowName.ToString()));
 				continue;
 			}
 
-			const FString PropValue = ColumnNode->GetContent();
+			const FString PropValue(ColumnNode.text().as_string());
 			FString Error = DataTableUtils::AssignStringToProperty(PropValue, Property, RowData);
 
 			// If we failed, output a problem string

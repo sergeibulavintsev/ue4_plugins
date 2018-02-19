@@ -1,10 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "XmlFile.h"
 
 class UDataTable;
 enum class EDataTableExportFlags : uint8;
+
+namespace pugi
+{
+	class xml_node;
+}
 
 #if WITH_EDITOR
 
@@ -19,11 +23,10 @@ public:
 	bool WriteTable(const UDataTable& InDataTable, const FString& FileName);
 
 private:
-	bool WriteRow(FXmlNode* RowNode, const UScriptStruct* InRowStruct, const void* InRowData);
-	bool WriteStructEntry(FXmlNode* RowNode, const void* InRowData, const UProperty* InProperty, const void* InPropertyData);
+	bool WriteRow(pugi::xml_node& RowNode, const UScriptStruct* InRowStruct, const void* InRowData);
+	bool WriteStructEntry(pugi::xml_node& RowNode, const void* InRowData, const UProperty* InProperty, const void* InPropertyData);
 
 	EDataTableExportFlags DTExportFlags;
-	TSharedPtr<FXmlFile> XmlFile;
 };
 
 #endif // WITH_EDITOR
