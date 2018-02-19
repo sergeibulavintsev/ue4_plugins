@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+import "Common.proto";
+
+package WGR3;
+
+// Interface exported by the server.
+service LobbyService {
+
+  /////////////////////// PLAYER RPCS ///////////////////////
+
+  // Get pricelist from game
+  rpc GetStoreInventory(StoreInventoryRequest) returns (stream ItemSpec) {}
+
+  // Buy stuff from game
+  rpc BuyStoreItem(StorePurchaseRequest) returns (GenericResponse) {}
+
+  // Look for stuff to buy from another player
+  rpc BidForItem(ItemBidRequest) returns (GenericResponse) {}
+
+  // Try to sell stuff to another player
+  rpc SellItem(ItemSpec) returns (GenericResponse) {}
+
+  // Gives client a balanced matchmaker
+  rpc GetMatchmaker(UserSessionInfo) returns (MatchmakerEndpoint) {}
+  
+  // enter into matchmaking queue
+  rpc LookForGame(PlayerInfo) returns (GenericResponse) {}
+  
+  // exit into matchmaking queue
+  rpc ExitQueue(PlayerInfo) returns (GenericResponse) {}
+
+}
+
+service LobbyNotificationsService {
+
+  // This initiates async notification stream back to the client
+  rpc GetNotifications(UserSessionInfo) returns (stream PlayerNotification) {}
+  
+}
+
+message MatchmakerEndpoint {
+  int32 param = 1;
+  string matchmakerEndpoint = 2;
+}
+
+message StoreInventoryRequest {
+  int32 param = 1;
+}
+
+message StorePurchaseRequest {
+  int32 param = 1;
+  int32 itemId = 2;
+  int32 playerId = 3;
+}
+
+message ItemBidRequest {
+  int32 maxPrice = 1;
+  float minQuality = 2;
+  float minDurability = 3;
+}
+

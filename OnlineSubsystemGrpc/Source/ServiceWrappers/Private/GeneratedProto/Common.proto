@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package WGR3;
+
+// Requests 
+
+message GenericResponse {
+	int32 param = 1;
+}
+
+message UserSessionInfo {
+	int32 userId = 1;
+    int32 sessionId = 2;
+	int32 ticket = 3;
+}
+
+message PlayerInfo {
+	int32 userId = 1;
+	int32 playerLevel = 2;
+	float playerRank = 3;
+	int32 playerMoney = 4;
+	int32 playerItems = 5;
+}
+
+message ItemSpec {
+  int32 itemId = 1;
+  int32 price = 2;
+  float quality = 3;
+  float durability = 4;
+}
+
+// Notifications
+
+message ItemBought {
+	int32 param = 1;
+	ItemSpec itemSpec = 2;
+}
+
+message ItemSold {
+	int32 param = 1;
+	int32 itemId = 2;
+}
+
+message GameReady {
+	int32 param = 1;
+  	string ArenaEndpoint = 2;
+	int32 items = 3;
+}
+
+message GameStarted {
+	int32 param = 1;
+}
+
+message PlayerNotification {
+	int32 param = 1;
+	oneof content {
+		ItemBought itemBought = 2;
+		ItemSold itemSold = 3;
+		GameReady gameReady = 4;
+		GameStarted gameStarted = 5;
+	}
+}

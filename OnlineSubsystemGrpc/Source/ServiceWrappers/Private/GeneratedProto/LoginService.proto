@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+import "Common.proto";
+
+package WGR3;
+
+// Interface exported by the server.
+service LoginService {
+
+  /////////////////////// PLAYER RPCS ///////////////////////
+
+  // called by user after connection, if username is right, resposponds with AuthChallenge or failure otherwise
+  rpc UserLogin(LoginInfo) returns (AuthChallenge) {}
+
+  // called by user after receiving valid AuthChallenge, if response is right, returns userId or failure otherwise
+  rpc UserAuth(AuthChallenge) returns (AuthResult) {}
+
+  // called by user after receiving valid UserInfo, receives stream of LoginQueue updates with number in queue and then LobbyApp endpoint
+  rpc QueueForLobby(AuthResult) returns (LoginQueueResult) {}
+
+  // Similar to EnterLobby, but called after disconnect to rejoin game/lobby possibly bypassing the queue
+  rpc ReconnectToLobby(UserSessionInfo) returns (LoginQueueResult) {}
+
+
+  /////////////////////// COMMON RPCS ///////////////////////
+  
+  // called by LobbyService to notify of possible client reconnect  
+  rpc AllowReconnect(UserSessionInfo) returns (GenericResponse) {}
+}
+
+message LoginInfo {
+  string userName = 1;
+}
+
+message AuthChallenge {
+  int32 param = 1;
+  string challengeString = 2;
+  int32 userId = 3;
+}
+
+message AuthResult {
+  int32 param = 1;
+  int32 sessionId = 2;
+  int32 userId = 3;
+}
+
+message LoginQueueResult {
+  int32 param = 1;
+  string LobbyServiceEndpoint = 2;
+  int32 userId = 3;
+}

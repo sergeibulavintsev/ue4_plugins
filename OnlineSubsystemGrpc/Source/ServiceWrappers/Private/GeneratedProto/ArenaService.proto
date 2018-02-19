@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "Common.proto";
+
+package WGR3;
+
+// Interface exported by the server.
+service ArenaService {
+
+  /////////////////////// MATCHMAKER RPCS ///////////////////////
+
+  rpc SetupGame(GameSetupInfo) returns (GameSetupResult) {}
+}
+
+message GameSetupInfo {
+    map <int32 , PlayerInfo> team = 1;
+    string matchmakerEndpoint = 2;
+}
+
+message GameSetupResult {
+    int32 param = 1;
+    int32 gameid = 2;
+}

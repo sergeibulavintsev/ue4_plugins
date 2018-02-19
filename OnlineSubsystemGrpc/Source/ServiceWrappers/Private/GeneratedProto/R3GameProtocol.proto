@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package WGR3;
+
+message JoinGame 
+{
+    int32 playerId = 1;
+    int32 gameId = 2;
+};
+
+message GameBegins 
+{
+    int32 gameId = 1;
+};
+
+message RolledDice 
+{
+    int32 score = 1;
+    int32 playerId = 2;
+    int32 gameId = 3;
+};
+
+message GameEnded 
+{
+    int32 gameId = 1;
+    int32 gameResult = 2;
+};
+
+message GameGenericResponse 
+{
+    int32 param = 1;
+}
+
+message GameMessage 
+{
+    int32 param = 1;
+    oneof content 
+    {
+        JoinGame joinGame= 2;
+        GameBegins gameBegins = 3;
+        RolledDice rolledDice = 4;
+        GameEnded gameEnded = 5;
+        GameGenericResponse genericResponse = 6;
+    }
+
+};

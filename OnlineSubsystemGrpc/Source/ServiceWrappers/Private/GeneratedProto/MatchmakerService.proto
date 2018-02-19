@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "Common.proto";
+
+package WGR3;
+
+// Interface exported by the server.
+service MatchmakerService {
+
+  /////////////////////// PLAYER RPCS ///////////////////////
+
+  /////////////////////// ARENA RPCS ///////////////////////
+  
+  // Called after game is complete to update players ranks
+  rpc ProcessGameResults(GameResult) returns (GenericResponse) {}
+}
+
+service MatchmakerNotificationsService {
+ // This initiates async notification stream back to the client
+  rpc GetNotifications(UserSessionInfo) returns (stream PlayerNotification) {}
+}
+
+message GameResult {
+  int32 gameId = 1;
+  int32 playerId = 2;
+  map <int32 , int32> usedItems = 3;
+}
+
