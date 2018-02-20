@@ -59,8 +59,8 @@ void FAssetTypeActions_DataTableExtended::GetActions(const TArray<UObject*>& InO
 	}
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("DataTable_ExportAsXml", "Export as Xml"),
-		LOCTEXT("DataTable_ExportAsXmlTooltip", "Export the data table as a file containing Xml data."),
+		LOCTEXT("DataTable_ExportAsXml", "Export as XML"),
+		LOCTEXT("DataTable_ExportAsXmlTooltip", "Export the data table as a file containing XML data."),
 		FSlateIcon(),
 		FUIAction(
 			FExecuteAction::CreateSP(this, &FAssetTypeActions_DataTableExtended::ExecuteExportAsXml, Tables),
@@ -71,7 +71,7 @@ void FAssetTypeActions_DataTableExtended::GetActions(const TArray<UObject*>& InO
 	TArray<FString> PotentialFileExtensions;
 	PotentialFileExtensions.Add(TEXT(".xml"));
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("DataTable_OpenXmlSourceData", "Open Xml Source Data"),
+		LOCTEXT("DataTable_OpenXmlSourceData", "Open Source Data (XML)"),
 		LOCTEXT("DataTable_OpenXmlSourceDataTooltip", "Opens the data table's source data file in an external editor. It will search using the following extensions: .xml"),
 		FSlateIcon(),
 		FUIAction(
@@ -101,7 +101,7 @@ void FAssetTypeActions_DataTableExtended::ExecuteExportAsXml(TArray< TWeakObject
 				ParentWindowWindowHandle,
 				Title.ToString(),
 				(CurrentFilename.IsEmpty()) ? TEXT("") : FPaths::GetPath(CurrentFilename),
-				(CurrentFilename.IsEmpty()) ? TEXT("") : FPaths::GetBaseFilename(CurrentFilename) + TEXT(".json"),
+				(CurrentFilename.IsEmpty()) ? TEXT("") : FPaths::GetBaseFilename(CurrentFilename) + TEXT(".xml"),
 				FileTypes,
 				EFileDialogFlags::None,
 				OutFilenames
@@ -109,8 +109,7 @@ void FAssetTypeActions_DataTableExtended::ExecuteExportAsXml(TArray< TWeakObject
 
 			if (OutFilenames.Num() > 0)
 			{
-				EDataTableExportFlags ExportFlags = EDataTableExportFlags::UsePrettyPropertyNames;
-				FDataTableExporterXml(ExportFlags).WriteTable(*DataTable, *OutFilenames[0]);
+				FDataTableExporterXml(EDataTableExportFlags::UsePrettyPropertyNames).WriteTable(*DataTable, *OutFilenames[0]);
 			}
 		}
 	}

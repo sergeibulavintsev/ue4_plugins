@@ -5,19 +5,6 @@
 #include "pugixml.hpp"
 #include <algorithm>
 
-namespace
-{
-	int GetDataTableColumnsNum(UDataTable& InDataTable)
-	{
-		int Num = 0;
-		for (TFieldIterator<UProperty> It(InDataTable.RowStruct); It; ++It)
-		{
-			check(*It != NULL);
-			Num++;
-		}
-		return Num;
-	}
-}
 
 bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileName, TArray<FString>& OutProblems)
 {
