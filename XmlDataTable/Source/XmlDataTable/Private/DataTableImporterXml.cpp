@@ -21,7 +21,7 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 	}
 
 	pugi::xml_document XmlTable;
-	auto result = XmlTable.load_file(TCHAR_TO_UTF8(*InFileName));
+	auto result = XmlTable.load_file(TCHAR_TO_UTF8(*InFileName), pugi::parse_default, pugi::xml_encoding::encoding_utf8);
 	if (result.status != pugi::xml_parse_status::status_ok)
 	{
 		OutProblems.Add(TEXT("Corrupted xml file."));
@@ -45,7 +45,7 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 	int ColumnsNum = InDataTable.GetColumnTitles().Num();
 	for (auto RowNode = RowNodes.begin(); RowNode != RowNodes.end(); RowNode++)
 	{
-		FName RowName = DataTableUtils::MakeValidName(FString(RowNode->child(XmlTags::Name).text().as_string()));
+		FName RowName = DataTableUtils::MakeValidName(FString(UTF8_TO_TCHAR(RowNode->child(XmlTags::RowName).text().as_string())));
 		// Check its not 'none'
 		if (RowName == NAME_None)
 		{
@@ -94,7 +94,7 @@ bool FDataTableImporterXml::ReadTable(UDataTable& InDataTable, FString InFileNam
 				continue;
 			}
 
-			const FString PropValue(ColumnNode.text().as_string());
+			const FString PropValue(UTF8_TO_TCHAR(ColumnNode.text().as_string()));
 			FString Error = DataTableUtils::AssignStringToProperty(PropValue, Property, RowData);
 
 			// If we failed, output a problem string

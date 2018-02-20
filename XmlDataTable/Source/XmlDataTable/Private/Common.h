@@ -4,6 +4,6 @@
 namespace XmlTags
 {
 	static const char* Root = "Root";
-	static const char* RowName = "Row";
-	static const char* Name = "Name";
+	static const char* RowTag = "Row";
+	static const char* RowName = "RowName";
 }

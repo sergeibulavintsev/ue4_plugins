@@ -42,8 +42,8 @@ bool FDataTableExporterXml::WriteTable(const UDataTable& InDataTable, const FStr
 	// Iterate over rows
 	for (auto RowIt = InDataTable.RowMap.CreateConstIterator(); RowIt; ++RowIt)
 	{
-		pugi::xml_node RowNode = RootNode.append_child(XmlTags::RowName);
-		pugi::xml_node NameNode = RowNode.append_child(XmlTags::Name);
+		pugi::xml_node RowNode = RootNode.append_child(XmlTags::RowTag);
+		pugi::xml_node NameNode = RowNode.append_child(XmlTags::RowName);
 		NameNode.append_child(pugi::node_pcdata).set_value(TCHAR_TO_UTF8(*RowIt.Key().ToString()));
 
 		// Now the values
