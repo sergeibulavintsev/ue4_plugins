@@ -19,7 +19,3 @@ class UXmlReimportFactory : public UXmlImportFactory, public FReimportHandler
 	virtual int32 GetPriority() const override;
 	//~ End FReimportHandler Interface
 };
-
-
-
-#pragma once
