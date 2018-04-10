@@ -34,8 +34,9 @@ class UXmlImportFactory	: public UFactory
 public:
 	virtual UObject* FactoryCreateFile(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, const FString& Filename, const TCHAR* Parms, FFeedbackContext* Warn, bool& bOutOperationCanceled) override;
 	virtual bool FactoryCanImport(const FString& Filename) override;
+	bool ReimportDataTableFromXml(class UDataTable* DataTable);
 private:
-	TArray<FString> DoImportDataTable(UDataTable* TargetDataTable, const FString& FileName);
+	TArray<FString> DoImportDataTable(class UDataTable* TargetDataTable, const FString& FileName);
 
 	UPROPERTY()
 	FXmlImportSettings AutomatedImportSettings;

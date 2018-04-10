@@ -10,14 +10,10 @@
 #include "Widgets/SWindow.h"
 #include "Framework/Application/SlateApplication.h"
 #include "EditorFramework/AssetImportData.h"
-#include "Curves/CurveLinearColor.h"
-#include "Curves/CurveVector.h"
-#include "Engine/CurveTable.h"
 #include "Engine/DataTable.h"
 #include "Editor.h"
 
 #include "Interfaces/IMainFrameModule.h"
-#include "Engine/DataTable.h"
 #include "Misc/FileHelper.h"
 
 DEFINE_LOG_CATEGORY(LogXmlImportFactory);
@@ -162,6 +158,25 @@ TArray<FString> UXmlImportFactory::DoImportDataTable(UDataTable* TargetDataTable
 	TArray<FString> Problems;
 	FDataTableImporterXml().ReadTable(*TargetDataTable, FileName, Problems);
 	return Problems;
+}
+
+bool UXmlImportFactory::ReimportDataTableFromXml(UDataTable* DataTable)
+{
+	const FString& Path = DataTable->AssetImportData->GetFirstFilename();
+	if (!Path.IsEmpty())
+	{
+		FString FilePath = IFileManager::Get().ConvertToRelativePath(*Path);
+		FString Data;
+		if (FFileHelper::LoadFileToString(Data, *FilePath))
+		{
+			const TCHAR* Ptr = *Data;
+			CurrentFilename = FilePath;
+			bool bOutOperationCanceled = false;
+			auto Result = FactoryCreateFile(DataTable->GetClass(), DataTable->GetOuter(), DataTable->GetFName(), DataTable->GetFlags(), CurrentFilename, nullptr, nullptr, bOutOperationCanceled);
+			return !bOutOperationCanceled;
+		}
+	}
+	return false;
 }
 
 #undef LOCTEXT_NAMESPACE
